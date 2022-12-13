@@ -24,17 +24,29 @@ class SettingsViewController: UIViewController {
     @IBOutlet var greenTF: UITextField!
     @IBOutlet var blueTF: UITextField!
     
+    // MARK: - Public Properties
+    
     var delegate: SettingsViewControllerDelegate!
     var color: UIColor!
     
     // MARK: - Override Methods
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         colorView.layer.cornerRadius = 15
         colorView.backgroundColor = color
         
+        redTF.delegate = self
+        greenTF.delegate = self
+        blueTF.delegate = self
+        
         setupUI()
         
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        view.endEditing(true)
     }
     
     // MARK: - IBActions
@@ -67,16 +79,17 @@ class SettingsViewController: UIViewController {
         var alpha: CGFloat = 0
 
         color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
+    
         redSlider.value = Float(red)
         greenSlider.value = Float(green)
         blueSlider.value = Float(blue)
         
-        setupTextLabels(for: redLabel, greenLabel, blueLabel, and: redTF, greenTF, blueTF)
-    
+        setupLabels(for: redLabel, greenLabel, blueLabel)
+        setupTF(for: redTF, greenTF, blueTF)
+        
     }
     
-    private func setupTextLabels(for labels: UILabel..., and textFields: UITextField...) {
+    private func setupLabels(for labels: UILabel...) {
         labels.forEach { label in
             switch label {
             case redLabel: label.text = string(from: redSlider)
@@ -84,7 +97,9 @@ class SettingsViewController: UIViewController {
             default: label.text = string(from: blueSlider)
             }
         }
-        
+    }
+    
+    private func setupTF(for textFields: UITextField...) {
         textFields.forEach { textField in
             switch textField {
             case redTF: textField.text = string(from: redSlider)
@@ -93,7 +108,6 @@ class SettingsViewController: UIViewController {
             }
         }
     }
-    
     
     private func setupColorView() {
         colorView.backgroundColor = UIColor(
@@ -107,6 +121,62 @@ class SettingsViewController: UIViewController {
     private func string(from slider: UISlider) -> String {
         String(format: "%.2f", slider.value)
     }
+    
+    private func showAlert(title: String, message: String, textField: UITextField? = nil) {
+
+    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+        textField?.text = ""
+    }
+     alert.addAction(okAction)
+     present(alert, animated: true)
+    }
 
 }
 
+// MARK: - UITextFieldDelegate
+extension SettingsViewController: UITextFieldDelegate {
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let newValue = textField.text else { return }
+        guard let numberValue = Float(newValue) else { return }
+        
+        if 0...1 ~= numberValue {
+            switch textField {
+            case redTF:
+                redSlider.value = numberValue
+                setupLabels(for: redLabel)
+            case greenTF:
+                greenSlider.value = numberValue
+                setupLabels(for: greenLabel)
+            default:
+                blueSlider.value = numberValue
+                setupLabels(for: blueLabel)
+            }
+            setupColorView()
+        } else {
+            showAlert(title: "Error!", message: "Please enter a number from 0 to 1", textField: textField)
+        }
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        let keypadToolbar = UIToolbar()
+        textField.inputAccessoryView = keypadToolbar
+        keypadToolbar.sizeToFit()
+
+        keypadToolbar.items=[
+            UIBarButtonItem(
+                barButtonSystemItem: .flexibleSpace,
+                target: self,
+                action: nil
+            ),
+            UIBarButtonItem(
+                title: "Done",
+                style: .done,
+                target: textField,
+                action: #selector(UITextField.resignFirstResponder)
+            )
+        ]
+    }
+
+}
