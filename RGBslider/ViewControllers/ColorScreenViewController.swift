@@ -12,7 +12,6 @@ protocol SettingsViewControllerDelegate {
 }
 
 class ColorScreenViewController: UIViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0.7, green: 0.5, blue: 0.2, alpha: 1)

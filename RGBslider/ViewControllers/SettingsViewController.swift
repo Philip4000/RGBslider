@@ -123,15 +123,15 @@ class SettingsViewController: UIViewController {
     }
     
     private func showAlert(title: String, message: String, textField: UITextField? = nil) {
-
-    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-    let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-        textField?.text = ""
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            textField?.text = ""
+        }
+        alert.addAction(okAction)
+        present(alert, animated: true)
     }
-     alert.addAction(okAction)
-     present(alert, animated: true)
-    }
-
+    
 }
 
 // MARK: - UITextFieldDelegate
@@ -144,13 +144,13 @@ extension SettingsViewController: UITextFieldDelegate {
         if 0...1 ~= numberValue {
             switch textField {
             case redTF:
-                redSlider.value = numberValue
+                redSlider.setValue(numberValue, animated: true)
                 setupLabels(for: redLabel)
             case greenTF:
-                greenSlider.value = numberValue
+                greenSlider.setValue(numberValue, animated: true)
                 setupLabels(for: greenLabel)
             default:
-                blueSlider.value = numberValue
+                blueSlider.setValue(numberValue, animated: true)
                 setupLabels(for: blueLabel)
             }
             setupColorView()
